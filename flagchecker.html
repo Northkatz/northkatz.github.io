@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Northkatz' tasks flags checker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/95css@latest/css/95css.min.css" />
+</head>
+
+<body style="margin:0; display:flex; justify-content:center; align-items:flex-start; min-height:100vh;">
+
+<dialog open style="width:360px; margin-top:80px;">
+<div class="dialog-header">
+<h2>Northkatz' tasks flags checker</h2>
+</div>
+
+<div class="dialog-body">
+
+<p><b>Task ID:</b> <span id="taskId">loading...</span></p>
+
+<div class="field-group">
+<div class="input-group">
+<label for="flag">Flag</label>
+<input type="text" id="flag">
+</div>
+</div>
+
+<br>
+
+<button onclick="checkFlag()">Check</button>
+
+<p id="result" style="margin-top:10px; font-weight:bold;"></p>
+
+</div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/js-sha3@0.9.2/src/sha3.min.js"></script>
+
+<script>
+const SALT="paranoidsystemz";
+let hashes={};
+
+function getQueryParam(name){
+const params=new URLSearchParams(window.location.search);
+return params.get(name);
+}
+
+const taskId=getQueryParam("q");
+document.getElementById("taskId").innerText=taskId||"not specified";
+
+fetch("https://northkatz.github.io/flags.json")
+.then(r=>r.json())
+.then(d=>{hashes=d;})
+.catch(()=>{
+const r=document.getElementById("result");
+r.style.color="red";
+r.innerText="Failed to load hashes";
+});
+
+function checkFlag(){
+const flag=document.getElementById("flag").value;
+const result=document.getElementById("result");
+
+if(!taskId||!hashes[taskId]){
+result.style.color="red";
+result.innerText="Invalid task ID";
+return;
+}
+
+const hash=sha3_512(flag+SALT);
+
+if(hash===hashes[taskId]){
+result.style.color="green";
+result.innerText="Correct flag!";
+}else{
+result.style.color="red";
+result.innerText="Wrong flag!";
+}
+}
+</script>
+
+</body>
+</html>
